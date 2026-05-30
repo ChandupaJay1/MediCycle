@@ -15,13 +15,12 @@ const TodayTab = () => {
   const takenCount = currentCycle.tablets.filter((t) => t.taken).length;
   const nextIndexToTake = currentCycle.tablets.findIndex((t) => !t.taken);
 
-  // Set default active month tab depending on pills taken
-  // Month 0: 0..23, Month 1: 24..47, Month 2: 48..71
+  // Focus active month tab automatically
   const [activeMonthTab, setActiveMonthTab] = useState(0);
 
   useEffect(() => {
     if (nextIndexToTake === -1) {
-      setActiveMonthTab(2); // If all taken, stay on Month 3
+      setActiveMonthTab(2);
     } else {
       const currentMonthIndex = Math.floor(nextIndexToTake / 24);
       setActiveMonthTab(currentMonthIndex);
@@ -33,7 +32,7 @@ const TodayTab = () => {
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (takenCount / 72) * circumference;
 
-  // Calendar dates generation helper (14 days starting from startDate)
+  // Calendar strip builder
   const get14Days = (startDateStr) => {
     if (!startDateStr) return [];
     const dates = [];
@@ -51,35 +50,48 @@ const TodayTab = () => {
 
   const periodCalendarDays = get14Days(currentCycle.periodStartDate);
 
-  // Format date helper
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  // Phase badge styles
+  const getPhaseStyles = (phase) => {
+    switch (phase) {
+      case 'medication':
+        return 'bg-[#FFEBF0] text-[#8C2D4A]';
+      case 'period_wait':
+        return 'bg-[#FFEFCB] text-[#8C6A1A]';
+      case 'period':
+        return 'bg-[#FFCCD5] text-[#B31E3F]';
+      case 'complete':
+        return 'bg-[#D4EDDA] text-[#155724]';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
-    <div className="tab-content">
-      {/* Personalized Greeting */}
-      <div className="app-header" style={{ padding: 0, borderBottom: 'none', background: 'transparent' }}>
-        <div className="app-title-container">
-          <h1 className="greeting-text">Hi, Sandali 🌸</h1>
-          <p className="app-subtitle">Track your cycle and stay healthy.</p>
+    <div className="flex-1 overflow-y-auto p-5 pb-[92px] custom-scrollbar flex flex-col gap-5">
+      {/* Top Header Card */}
+      <div className="flex justify-between items-center pt-2">
+        <div className="flex flex-col">
+          <h1 className="font-title text-2xl font-extrabold text-gray-800 tracking-tight">Hi, Sandali 🌸</h1>
+          <p className="text-[0.75rem] text-gray-400 mt-0.5">Track your cycle and stay healthy.</p>
         </div>
-        <div className="phase-badge">
-          <span className={`phase-banner ${currentCycle.phase}`}>
-            {currentCycle.phase.replace('_', ' ')}
-          </span>
-        </div>
+        <span className={`text-[0.62rem] font-bold tracking-wider uppercase px-2.5 py-1.5 rounded-lg shadow-sm border border-black/5 ${getPhaseStyles(currentCycle.phase)}`}>
+          {currentCycle.phase.replace('_', ' ')}
+        </span>
       </div>
 
-      {/* Circular Progress Ring */}
-      <div className="card" style={{ alignItems: 'center', justifyContent: 'center' }}>
-        <div className="progress-ring-container">
-          <svg className="progress-ring-svg">
-            <circle className="progress-ring-bg" cx="80" cy="80" r={radius} />
+      {/* Circular Progress Card */}
+      <div className="bg-white rounded-2xl p-5 shadow-rose-sm border border-border-rose flex flex-col items-center justify-center gap-4 transition-all duration-200 hover:shadow-rose-md">
+        <div className="relative w-40 h-40 flex items-center justify-center">
+          <svg className="transform -rotate-90 w-full h-full">
+            <circle className="fill-none stroke-primary-light stroke-[12px]" cx="80" cy="80" r={radius} />
             <circle
-              className="progress-ring-bar"
+              className="fill-none stroke-primary stroke-[12px] stroke-linecap-round progress-ring-bar"
               cx="80"
               cy="80"
               r={radius}
@@ -87,69 +99,66 @@ const TodayTab = () => {
               strokeDashoffset={strokeDashoffset}
             />
           </svg>
-          <div className="progress-ring-text">
-            <span className="progress-ring-value">{takenCount}/72</span>
-            <span className="progress-ring-label">Tablets Taken</span>
+          <div className="absolute flex flex-col items-center justify-center text-center">
+            <span className="font-title text-3xl font-extrabold text-primary">{takenCount}/72</span>
+            <span className="text-[0.68rem] text-gray-500 font-bold uppercase tracking-wider">Pills taken</span>
           </div>
         </div>
-        <div style={{ textAlign: 'center', width: '100%' }}>
-          <p style={{ fontSize: '0.9rem', color: 'var(--text-medium)', fontWeight: '600' }}>
+        <div className="text-center w-full">
+          <p className="text-[0.92rem] text-gray-600 font-bold">
             Overall Treatment Progress: {Math.round((takenCount / 72) * 100)}%
           </p>
         </div>
       </div>
 
-      {/* Countdown Banner if 5 or fewer tablets remaining */}
+      {/* 5-tablet countdown banner */}
       {currentCycle.phase === 'medication' && takenCount >= 67 && (
-        <div className="countdown-banner">
-          <div className="countdown-title">
+        <div className="bg-gradient-to-br from-[#FFEBF0] to-[#FFD1DC] border-l-4 border-primary p-4 rounded-2xl text-gray-800 flex flex-col gap-2 shadow-sm animate-pulse-slow">
+          <div className="font-bold text-[0.92rem] flex items-center gap-1.5 text-primary">
             <span>⚠️</span> Nearly Complete! 5-Tablet Countdown
           </div>
-          <p style={{ fontSize: '0.85rem' }}>
+          <p className="text-[0.8rem] text-gray-600 font-medium">
             You have {72 - takenCount} {72 - takenCount === 1 ? 'tablet' : 'tablets'} remaining in this treatment.
           </p>
-          <div className="countdown-dots">
+          <div className="flex gap-2">
             {[67, 68, 69, 70, 71].map((idx) => (
               <div
                 key={idx}
-                className={`countdown-dot ${currentCycle.tablets[idx].taken ? 'taken' : ''}`}
+                className={`w-2.5 h-2.5 rounded-full border border-primary transition-all duration-300 ${
+                  currentCycle.tablets[idx].taken ? 'bg-primary scale-110' : 'bg-white'
+                }`}
               />
             ))}
           </div>
         </div>
       )}
 
-      {/* Phase 1: Medication Grid */}
+      {/* Phase: Medication Grid */}
       {currentCycle.phase === 'medication' && (
-        <div className="card">
-          <div className="card-title">
+        <div className="bg-white rounded-2xl p-5 shadow-rose-sm border border-border-rose flex flex-col gap-4 transition-all duration-200 hover:shadow-rose-md">
+          <div className="font-title text-md font-bold text-gray-800 flex items-center gap-1.5">
             <span>💊</span> Medication Cycle Grid
           </div>
 
           {/* Month Switcher Tabs */}
-          <div className="tab-switcher">
-            <button
-              className={`tab-switch-btn ${activeMonthTab === 0 ? 'active' : ''}`}
-              onClick={() => setActiveMonthTab(0)}
-            >
-              Month 1
-            </button>
-            <button
-              className={`tab-switch-btn ${activeMonthTab === 1 ? 'active' : ''}`}
-              onClick={() => setActiveMonthTab(1)}
-            >
-              Month 2
-            </button>
-            <button
-              className={`tab-switch-btn ${activeMonthTab === 2 ? 'active' : ''}`}
-              onClick={() => setActiveMonthTab(2)}
-            >
-              Month 3
-            </button>
+          <div className="flex bg-primary-light p-1 rounded-2xl gap-1">
+            {['Month 1', 'Month 2', 'Month 3'].map((monthLabel, idx) => (
+              <button
+                key={idx}
+                className={`flex-1 py-2 text-[0.82rem] font-title font-semibold rounded-xl transition-all duration-200 ${
+                  activeMonthTab === idx
+                    ? 'bg-white text-primary shadow-sm font-bold'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+                onClick={() => setActiveMonthTab(idx)}
+              >
+                {monthLabel}
+              </button>
+            ))}
           </div>
 
           {/* Pill Grid */}
-          <div className="pill-grid">
+          <div className="grid grid-cols-6 gap-2.5 justify-items-center py-2">
             {Array.from({ length: 24 }).map((_, i) => {
               const pillNum = i + 1;
               const globalIndex = activeMonthTab * 24 + i;
@@ -161,7 +170,13 @@ const TodayTab = () => {
               return (
                 <button
                   key={globalIndex}
-                  className={`pill-button ${isTaken ? 'taken' : ''} ${isLocked ? 'locked' : ''}`}
+                  className={`w-12 h-12 rounded-full border-2 font-title text-[0.95rem] font-bold flex items-center justify-center shadow-[0_4px_6px_rgba(232,99,138,0.06)] transition-all duration-150 active:scale-85 ${
+                    isTaken
+                      ? 'bg-gradient-to-br from-primary to-[#F383A2] border-primary text-white shadow-[0_6px_12px_rgba(232,99,138,0.22)]'
+                      : isLocked
+                      ? 'opacity-35 border-gray-300 text-gray-400 shadow-none cursor-not-allowed'
+                      : 'border-primary bg-white text-primary cursor-pointer hover:bg-primary-light'
+                  }`}
                   disabled={isLocked}
                   onClick={() => takeTablet(globalIndex)}
                   title={isTaken ? `Taken at ${new Date(tablet.takenAt).toLocaleString()}` : isNext ? 'Tap to mark taken' : 'Locked'}
@@ -173,12 +188,11 @@ const TodayTab = () => {
           </div>
 
           {/* Grid Controls */}
-          <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+          <div className="flex gap-2.5 mt-1">
             <button
-              className="btn-secondary"
+              className="bg-primary-light text-primary border border-border-rose font-title text-sm font-bold py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2 active:scale-97 cursor-pointer w-full transition-transform duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={takenCount === 0}
               onClick={undoTablet}
-              style={{ flex: 1 }}
             >
               <span>↩️</span> Undo Last Taken
             </button>
@@ -186,109 +200,125 @@ const TodayTab = () => {
         </div>
       )}
 
-      {/* Phase 2: Period Wait */}
+      {/* Phase: Period Wait */}
       {currentCycle.phase === 'period_wait' && (
-        <div className="card">
-          <div className="card-title">
+        <div className="bg-white rounded-2xl p-5 shadow-rose-sm border border-border-rose flex flex-col gap-4 transition-all duration-200 hover:shadow-rose-md">
+          <div className="font-title text-md font-bold text-gray-800 flex items-center gap-1.5">
             <span>🌸</span> Medication Phase Finished
           </div>
-          <p style={{ fontSize: '0.9rem', color: 'var(--text-medium)', lineHeight: '1.4' }}>
+          <p className="text-[0.88rem] text-gray-500 leading-relaxed">
             Congratulations, you completed all 72 tablets of this treatment cycle! 🌸
           </p>
-          <p style={{ fontSize: '0.9rem', color: 'var(--text-medium)', lineHeight: '1.4' }}>
+          <p className="text-[0.88rem] text-gray-500 leading-relaxed">
             The app is currently waiting for your period flow to start. Once it does, click the button below to start period tracking.
           </p>
           
-          <button className="btn-primary" onClick={startPeriod}>
+          <button
+            className="bg-gradient-to-br from-primary to-[#FA8CA8] text-white border-none font-title text-base font-bold py-3.5 px-5 rounded-2xl shadow-[0_4px_15px_rgba(232,99,138,0.18)] flex items-center justify-center gap-2 active:scale-97 cursor-pointer w-full transition-transform duration-150"
+            onClick={startPeriod}
+          >
             <span>🩸</span> Mark Period Started
           </button>
           
           <button
-            className="btn-secondary"
+            className="bg-primary-light text-primary border border-border-rose font-title text-sm font-bold py-3 px-4 rounded-2xl flex items-center justify-center gap-2 active:scale-97 cursor-pointer w-full transition-transform duration-150"
             onClick={undoTablet}
-            style={{ marginTop: '5px' }}
           >
             <span>↩️</span> Undo 72nd Pill
           </button>
         </div>
       )}
 
-      {/* Phase 3: Period Calendar Strip */}
+      {/* Phase: Period Calendar Strip */}
       {currentCycle.phase === 'period' && (
-        <div className="card">
-          <div className="card-title">
+        <div className="bg-white rounded-2xl p-5 shadow-rose-sm border border-border-rose flex flex-col gap-4 transition-all duration-200 hover:shadow-rose-md">
+          <div className="font-title text-md font-bold text-gray-800 flex items-center gap-1.5">
             <span>🩸</span> Period Flow Tracking
           </div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-medium)' }}>
+          <p className="text-[0.85rem] text-gray-500 leading-relaxed">
             Toggle the days on the 14-day strip below where you experienced bleeding flow.
           </p>
 
           {/* Horizontal Calendar Strip */}
-          <div className="period-strip">
+          <div className="flex overflow-x-auto gap-2.5 py-2 custom-scrollbar snap-x">
             {periodCalendarDays.map((day) => {
               const isSelected = currentCycle.periodDays.includes(day.dateStr);
               return (
                 <button
                   key={day.dateStr}
-                  className={`period-day-btn ${isSelected ? 'active' : ''}`}
+                  className={`flex-[0_0_46px] h-[60px] flex flex-col justify-center items-center border rounded-xl cursor-pointer snap-start transition-all duration-200 active:scale-90 ${
+                    isSelected
+                      ? 'bg-primary border-primary text-white shadow-[0_4px_10px_rgba(232,99,138,0.22)]'
+                      : 'border-border-rose bg-white text-gray-800 hover:bg-primary-light'
+                  }`}
                   onClick={() => togglePeriodDay(day.dateStr)}
                   title={day.dateStr}
                 >
-                  <span className="period-day-name">{day.dayName}</span>
-                  <span className="period-day-num">{day.dayNum}</span>
+                  <span className={`text-[0.66rem] font-bold ${isSelected ? 'text-[#FFEBF0]' : 'text-gray-400'}`}>
+                    {day.dayName}
+                  </span>
+                  <span className="font-title text-sm font-extrabold mt-0.5">{day.dayNum}</span>
                 </button>
               );
             })}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
-            <button className="btn-primary" onClick={endPeriod}>
+          <div className="flex flex-col gap-2.5 mt-1">
+            <button
+              className="bg-gradient-to-br from-primary to-[#FA8CA8] text-white border-none font-title text-base font-bold py-3.5 px-5 rounded-2xl shadow-[0_4px_15px_rgba(232,99,138,0.18)] flex items-center justify-center gap-2 active:scale-97 cursor-pointer w-full transition-transform duration-150"
+              onClick={endPeriod}
+            >
               <span>✓</span> Mark Period Ended
             </button>
-            <div className="details-row">
-              <span className="details-label">Period Started:</span>
-              <span className="details-value">{formatDate(currentCycle.periodStartDate)}</span>
+            <div className="flex justify-between py-2 border-b border-border-rose text-[0.88rem] mt-1">
+              <span className="text-gray-500 font-medium">Period Started:</span>
+              <span className="text-gray-800 font-bold">{formatDate(currentCycle.periodStartDate)}</span>
             </div>
-            <div className="details-row">
-              <span className="details-label">Active Period Days:</span>
-              <span className="details-value">{currentCycle.periodDays.length} days</span>
+            <div className="flex justify-between py-2 border-b border-border-rose text-[0.88rem]">
+              <span className="text-gray-500 font-medium">Active Period Days:</span>
+              <span className="text-gray-800 font-bold">{currentCycle.periodDays.length} days</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* Phase 4: Complete Cycle summary */}
+      {/* Phase: Complete */}
       {currentCycle.phase === 'complete' && (
-        <div className="card">
-          <div className="card-title">
+        <div className="bg-white rounded-2xl p-5 shadow-rose-sm border border-border-rose flex flex-col gap-4 transition-all duration-200 hover:shadow-rose-md">
+          <div className="font-title text-md font-bold text-gray-800 flex items-center gap-1.5">
             <span>✨</span> Treatment Cycle Complete
           </div>
-          <p style={{ fontSize: '0.9rem', color: 'var(--text-medium)', lineHeight: '1.4' }}>
+          <p className="text-[0.88rem] text-gray-500 leading-relaxed">
             This 3-month treatment cycle has successfully finished. Here is the summary:
           </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', margin: '10px 0' }}>
-            <div className="details-row">
-              <span className="details-label">Period Started:</span>
-              <span className="details-value">{formatDate(currentCycle.periodStartDate)}</span>
+          <div className="flex flex-col gap-2 mt-1">
+            <div className="flex justify-between py-2 border-b border-border-rose text-[0.88rem]">
+              <span className="text-gray-500 font-medium">Period Started:</span>
+              <span className="text-gray-800 font-bold">{formatDate(currentCycle.periodStartDate)}</span>
             </div>
-            <div className="details-row">
-              <span className="details-label">Period Ended:</span>
-              <span className="details-value">{formatDate(currentCycle.periodEndDate)}</span>
+            <div className="flex justify-between py-2 border-b border-border-rose text-[0.88rem]">
+              <span className="text-gray-500 font-medium">Period Ended:</span>
+              <span className="text-gray-800 font-bold">{formatDate(currentCycle.periodEndDate)}</span>
             </div>
-            <div className="details-row">
-              <span className="details-label">Period Duration:</span>
-              <span className="details-value">
+            <div className="flex justify-between py-2 border-b border-border-rose text-[0.88rem]">
+              <span className="text-gray-500 font-medium">Period Duration:</span>
+              <span className="text-gray-800 font-bold">
                 {Math.max(1, Math.round((new Date(currentCycle.periodEndDate) - new Date(currentCycle.periodStartDate)) / (1000 * 60 * 60 * 24)) + 1)} days
               </span>
             </div>
-            <div className="details-row" style={{ borderTop: '2px dashed var(--primary-light)', paddingTop: '10px' }}>
-              <span className="details-label" style={{ color: 'var(--primary)', fontWeight: '700' }}>Medication Restart Date:</span>
-              <span className="details-value" style={{ color: 'var(--primary)', fontWeight: '800' }}>{formatDate(currentCycle.restartDate)}</span>
+            <div className="flex justify-between py-3 border-b-2 border-dashed border-primary-light text-[0.88rem] mt-1 items-center">
+              <span className="text-primary font-bold">Medication Restart Date:</span>
+              <span className="text-white bg-primary px-3 py-1 rounded-xl text-xs font-extrabold shadow-sm">
+                {formatDate(currentCycle.restartDate)}
+              </span>
             </div>
           </div>
 
-          <button className="btn-primary" onClick={startNewCycle}>
+          <button
+            className="bg-gradient-to-br from-primary to-[#FA8CA8] text-white border-none font-title text-base font-bold py-3.5 px-5 rounded-2xl shadow-[0_4px_15px_rgba(232,99,138,0.18)] flex items-center justify-center gap-2 active:scale-97 cursor-pointer w-full transition-transform duration-150 mt-2"
+            onClick={startNewCycle}
+          >
             <span>🌸</span> Start New Cycle
           </button>
         </div>

@@ -28,24 +28,22 @@ const HistoryTab = () => {
   };
 
   return (
-    <div className="tab-content">
-      <div className="app-header" style={{ padding: 0, borderBottom: 'none', background: 'transparent' }}>
-        <div className="app-title-container">
-          <h1 className="greeting-text">Cycle History 📜</h1>
-          <p className="app-subtitle">Log of all your past completed treatments.</p>
-        </div>
+    <div className="flex-1 overflow-y-auto p-5 pb-[92px] custom-scrollbar flex flex-col gap-5">
+      <div className="flex flex-col pt-2">
+        <h1 className="font-title text-2xl font-extrabold text-gray-800 tracking-tight">Cycle History 📜</h1>
+        <p className="text-[0.75rem] text-gray-400 mt-0.5">Log of all your past completed treatments.</p>
       </div>
 
       {pastCycles.length === 0 ? (
-        <div className="card" style={{ padding: '40px 20px', alignItems: 'center' }}>
-          <div className="empty-placeholder">
-            <span className="empty-icon">🌸</span>
-            <h3>No Cycle History Yet</h3>
-            <p>Your finished treatment cycles will be stored and broken down here.</p>
-          </div>
+        <div className="bg-white rounded-2xl p-8 border border-border-rose shadow-rose-sm flex flex-col items-center justify-center text-center">
+          <span className="text-4xl mb-3">🌸</span>
+          <h3 className="font-title text-md font-bold text-gray-800">No Cycle History Yet</h3>
+          <p className="text-xs text-gray-400 mt-1 max-w-[240px] leading-relaxed">
+            Your finished treatment cycles will be stored and broken down here.
+          </p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div className="flex flex-col gap-3.5">
           {pastCycles.map((cycle, index) => {
             const isExpanded = !!expandedCycles[cycle.id];
             const startStr = cycle.monthStartDates[0] ? formatDate(cycle.monthStartDates[0]) : 'Unknown Start';
@@ -53,64 +51,67 @@ const HistoryTab = () => {
             const periodLen = getPeriodDuration(cycle.periodStartDate, cycle.periodEndDate);
 
             return (
-              <div className="history-card" key={cycle.id || index}>
+              <div className="border border-border-rose rounded-2xl bg-white overflow-hidden shadow-rose-sm flex flex-col" key={cycle.id || index}>
                 {/* Collapsible Header */}
-                <div className="history-header" onClick={() => toggleExpand(cycle.id)}>
-                  <div className="history-header-left">
-                    <span className="history-date">
+                <div
+                  className="p-4 flex justify-between items-center cursor-pointer select-none transition-colors duration-150 hover:bg-bg-rose"
+                  onClick={() => toggleExpand(cycle.id)}
+                >
+                  <div className="flex flex-col">
+                    <span className="font-title text-[0.92rem] font-bold text-gray-800">
                       Cycle: {startStr} – {endStr}
                     </span>
-                    <span className="history-duration">
+                    <span className="text-[0.75rem] text-gray-400 font-semibold mt-0.5">
                       Treatment Cycle #{pastCycles.length - index} • Period: {periodLen} days
                     </span>
                   </div>
-                  <span className={`history-toggle-arrow ${isExpanded ? 'expanded' : ''}`}>
+                  <span className={`text-primary text-xs font-bold transition-transform duration-200 transform inline-block ${isExpanded ? 'rotate-180' : ''}`}>
                     ▼
                   </span>
                 </div>
 
                 {/* Collapsible Body */}
                 {isExpanded && (
-                  <div className="history-body">
+                  <div className="p-4 border-t border-border-rose bg-[#FCF6F8] flex flex-col gap-3.5">
                     {/* Medication Phase Breakdown */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <h4 style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    <div className="flex flex-col gap-2">
+                      <h4 className="text-[0.75rem] text-primary font-bold tracking-wider uppercase border-b border-primary/10 pb-1">
                         💊 Medication Breakdown
                       </h4>
                       {cycle.monthStartDates.map((startDate, mIdx) => (
-                        <div className="details-row" key={mIdx} style={{ fontSize: '0.85rem' }}>
-                          <span className="details-label">Month {mIdx + 1} Started:</span>
-                          <span className="details-value">{formatDate(startDate)}</span>
+                        <div className="flex justify-between text-[0.82rem] pb-1 border-b border-border-rose/40" key={mIdx}>
+                          <span className="text-gray-500">Month {mIdx + 1} Started:</span>
+                          <span className="text-gray-800 font-bold">{formatDate(startDate)}</span>
                         </div>
                       ))}
                     </div>
 
-                    <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '4px 0' }} />
-
                     {/* Period & Restart Date Breakdown */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <h4 style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    <div className="flex flex-col gap-2 mt-1">
+                      <h4 className="text-[0.75rem] text-primary font-bold tracking-wider uppercase border-b border-primary/10 pb-1">
                         🩸 Period details
                       </h4>
-                      <div className="details-row" style={{ fontSize: '0.85rem' }}>
-                        <span className="details-label">Period Dates:</span>
-                        <span className="details-value">{formatDate(cycle.periodStartDate)} – {formatDate(cycle.periodEndDate)}</span>
+                      <div className="flex justify-between text-[0.82rem] pb-1 border-b border-border-rose/40">
+                        <span className="text-gray-500">Period Dates:</span>
+                        <span className="text-gray-800 font-bold">{formatDate(cycle.periodStartDate)} – {formatDate(cycle.periodEndDate)}</span>
                       </div>
-                      <div className="details-row" style={{ fontSize: '0.85rem' }}>
-                        <span className="details-label">Bleeding Days:</span>
-                        <span className="details-value">{cycle.periodDays.length} days</span>
+                      <div className="flex justify-between text-[0.82rem] pb-1 border-b border-border-rose/40">
+                        <span className="text-gray-500">Bleeding Days:</span>
+                        <span className="text-gray-800 font-bold">{cycle.periodDays.length} days</span>
                       </div>
-                      <div className="details-row" style={{ fontSize: '0.85rem' }}>
-                        <span className="details-label">Total Cycle Duration:</span>
-                        <span className="details-value">
+                      <div className="flex justify-between text-[0.82rem] pb-1 border-b border-border-rose/40">
+                        <span className="text-gray-500">Total Cycle Duration:</span>
+                        <span className="text-gray-800 font-bold">
                           {cycle.monthStartDates[0] && cycle.periodEndDate
                             ? `${Math.ceil(Math.abs(new Date(cycle.periodEndDate) - new Date(cycle.monthStartDates[0])) / (1000 * 60 * 60 * 24)) + 1} days`
                             : 'N/A'}
                         </span>
                       </div>
-                      <div className="details-row" style={{ fontSize: '0.85rem', borderTop: '1px dashed var(--primary-light)', paddingTop: '8px', marginTop: '4px' }}>
-                        <span className="details-label" style={{ fontWeight: '700', color: 'var(--primary)' }}>Medication Restarted:</span>
-                        <span className="details-value" style={{ fontWeight: '800', color: 'var(--primary)' }}>{formatDate(cycle.restartDate)}</span>
+                      <div className="flex justify-between text-[0.82rem] pt-1.5 items-center">
+                        <span className="text-primary font-bold">Medication Restarted:</span>
+                        <span className="text-white bg-primary px-2.5 py-0.5 rounded-lg text-[0.7rem] font-extrabold">
+                          {formatDate(cycle.restartDate)}
+                        </span>
                       </div>
                     </div>
                   </div>

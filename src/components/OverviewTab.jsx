@@ -5,14 +5,12 @@ const OverviewTab = () => {
   const { currentCycle } = useCycle();
   const totalTaken = currentCycle.tablets.filter((t) => t.taken).length;
 
-  // Formatting date utility
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  // Stats builder for each month (monthIdx = 0, 1, 2)
   const getMonthStats = (monthIdx) => {
     const startIndex = monthIdx * 24;
     const endIndex = startIndex + 23;
@@ -35,18 +33,16 @@ const OverviewTab = () => {
     if (completed) {
       const lastPill = monthTablets[23];
       const end = lastPill.takenAt ? new Date(lastPill.takenAt) : today;
-      // Days elapsed is from the start date to the actual 24th pill take date
       daysElapsed = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1);
       daysRemaining = 0;
       completionDateStr = end.toISOString().split('T')[0];
     } else {
-      // Current active tracking
       const timeDiff = today.getTime() - start.getTime();
       daysElapsed = Math.max(1, Math.floor(timeDiff / (1000 * 60 * 60 * 24)) + 1);
       daysRemaining = Math.max(0, 24 - daysElapsed);
       
       const estCompletion = new Date(start);
-      estCompletion.setDate(start.getDate() + 23); // Day 24 is day 1 + 23
+      estCompletion.setDate(start.getDate() + 23);
       completionDateStr = estCompletion.toISOString().split('T')[0];
     }
 
@@ -67,32 +63,30 @@ const OverviewTab = () => {
   ];
 
   return (
-    <div className="tab-content">
-      <div className="app-header" style={{ padding: 0, borderBottom: 'none', background: 'transparent' }}>
-        <div className="app-title-container">
-          <h1 className="greeting-text">Cycle Overview 📋</h1>
-          <p className="app-subtitle">Detailed monthly breakdown statistics.</p>
-        </div>
+    <div className="flex-1 overflow-y-auto p-5 pb-[92px] custom-scrollbar flex flex-col gap-5">
+      <div className="flex flex-col pt-2">
+        <h1 className="font-title text-2xl font-extrabold text-gray-800 tracking-tight">Cycle Overview 📋</h1>
+        <p className="text-[0.75rem] text-gray-400 mt-0.5">Detailed monthly breakdown statistics.</p>
       </div>
 
       {/* General Stats Card */}
-      <div className="card">
-        <div className="card-title">
+      <div className="bg-white rounded-2xl p-5 shadow-rose-sm border border-border-rose flex flex-col gap-3.5 transition-all duration-200 hover:shadow-rose-md">
+        <div className="font-title text-md font-bold text-gray-800 flex items-center gap-1.5 border-b border-border-rose pb-2">
           <span>📊</span> overall Treatment Stats
         </div>
-        <div className="details-row">
-          <span className="details-label">Total Pills Taken:</span>
-          <span className="details-value">{totalTaken} / 72</span>
+        <div className="flex justify-between text-[0.88rem]">
+          <span className="text-gray-500 font-medium">Total Pills Taken:</span>
+          <span className="text-gray-800 font-bold">{totalTaken} / 72</span>
         </div>
-        <div className="details-row">
-          <span className="details-label">Current Cycle Phase:</span>
-          <span className="details-value" style={{ textTransform: 'capitalize' }}>
+        <div className="flex justify-between text-[0.88rem]">
+          <span className="text-gray-500 font-medium">Current Cycle Phase:</span>
+          <span className="text-gray-800 font-bold text-right capitalize">
             {currentCycle.phase.replace('_', ' ')}
           </span>
         </div>
-        <div className="details-row">
-          <span className="details-label">Active Period Days Tracked:</span>
-          <span className="details-value">{currentCycle.periodDays.length} days</span>
+        <div className="flex justify-between text-[0.88rem]">
+          <span className="text-gray-500 font-medium">Active Period Days Tracked:</span>
+          <span className="text-gray-800 font-bold">{currentCycle.periodDays.length} days</span>
         </div>
       </div>
 
@@ -101,50 +95,57 @@ const OverviewTab = () => {
         const { started, completed, taken, daysElapsed, daysRemaining, completionDate } = m.stats;
         
         return (
-          <div className="card" key={index} style={{ opacity: started ? 1 : 0.6 }}>
-            <div className="card-title" style={{ justifyContent: 'space-between' }}>
+          <div
+            className="bg-white rounded-2xl p-5 shadow-rose-sm border border-border-rose flex flex-col gap-4 transition-all duration-200 hover:shadow-rose-md"
+            key={index}
+            style={{ opacity: started ? 1 : 0.6 }}
+          >
+            <div className="font-title text-md font-bold text-gray-800 flex justify-between items-center">
               <span>{m.title}</span>
-              {!started && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Not Started</span>}
-              {started && !completed && <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: '600' }}>In Progress</span>}
-              {completed && <span style={{ fontSize: '0.8rem', color: 'var(--success)', fontWeight: '600' }}>✓ Completed</span>}
+              {!started && <span className="text-[0.7rem] bg-gray-100 text-gray-400 px-2 py-1 rounded-md font-bold">Not Started</span>}
+              {started && !completed && <span className="text-[0.7rem] bg-primary-light text-primary px-2 py-1 rounded-md font-bold">In Progress</span>}
+              {completed && <span className="text-[0.7rem] bg-green-50 text-green-600 px-2 py-1 rounded-md font-bold">✓ Completed</span>}
             </div>
 
             {/* Monthly Progress Bar */}
-            <div className="progress-bar-container">
-              <div className="progress-bar-header">
+            <div className="flex flex-col">
+              <div className="flex justify-between text-[0.75rem] font-semibold text-gray-500 mb-1.5">
                 <span>Pills Intake</span>
                 <span>{taken} / 24</span>
               </div>
-              <div className="progress-bar-track">
-                <div className="progress-bar-fill" style={{ width: `${(taken / 24) * 100}%` }}></div>
+              <div className="h-2.5 w-full bg-primary-light rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary to-[#FA8CA8] rounded-full transition-all duration-500"
+                  style={{ width: `${(taken / 24) * 100}%` }}
+                ></div>
               </div>
             </div>
 
-            {/* Monthly Details (Only shown if started) */}
+            {/* Monthly Details */}
             {started ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '5px' }}>
-                <div className="details-row">
-                  <span className="details-label">Days Elapsed:</span>
-                  <span className="details-value">{daysElapsed} {daysElapsed === 1 ? 'day' : 'days'}</span>
+              <div className="flex flex-col gap-2 mt-1">
+                <div className="flex justify-between text-[0.88rem] border-b border-border-rose pb-1.5">
+                  <span className="text-gray-500 font-medium">Days Elapsed:</span>
+                  <span className="text-gray-800 font-bold">{daysElapsed} {daysElapsed === 1 ? 'day' : 'days'}</span>
                 </div>
                 {!completed && (
-                  <div className="details-row">
-                    <span className="details-label">Days Remaining:</span>
-                    <span className="details-value">{daysRemaining} {daysRemaining === 1 ? 'day' : 'days'}</span>
+                  <div className="flex justify-between text-[0.88rem] border-b border-border-rose pb-1.5">
+                    <span className="text-gray-500 font-medium">Days Remaining:</span>
+                    <span className="text-gray-800 font-bold">{daysRemaining} {daysRemaining === 1 ? 'day' : 'days'}</span>
                   </div>
                 )}
-                <div className="details-row">
-                  <span className="details-label">{completed ? 'Completion Date:' : 'Est. Completion Date:'}</span>
-                  <span className="details-value">{formatDate(completionDate)}</span>
+                <div className="flex justify-between text-[0.88rem] border-b border-border-rose pb-1.5">
+                  <span className="text-gray-500 font-medium">{completed ? 'Completion Date:' : 'Est. Completion Date:'}</span>
+                  <span className="text-gray-800 font-bold">{formatDate(completionDate)}</span>
                 </div>
-                <div className="details-row">
-                  <span className="details-label">Month Started On:</span>
-                  <span className="details-value">{formatDate(currentCycle.monthStartDates[index])}</span>
+                <div className="flex justify-between text-[0.88rem]">
+                  <span className="text-gray-500 font-medium">Month Started On:</span>
+                  <span className="text-gray-800 font-bold">{formatDate(currentCycle.monthStartDates[index])}</span>
                 </div>
               </div>
             ) : (
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center' }}>
-                This month's tracking will start automatically when you take the first tablet of the month.
+              <p className="text-[0.8rem] text-gray-400 font-semibold italic text-center py-2">
+                Starts automatically when you take Month {index + 1}'s first tablet.
               </p>
             )}
           </div>

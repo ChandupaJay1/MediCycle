@@ -10,18 +10,15 @@ const AppContent = () => {
   const [activeTab, setActiveTab] = useState('today');
   const { checkReminderNotification } = useCycle();
 
-  // Run checks for reminder alerts when app is active (every 30 seconds)
+  // Check reminder status every 30 seconds
   useEffect(() => {
-    checkReminderNotification(); // Initial check
-    
-    const intervalId = setInterval(() => {
+    checkReminderNotification();
+    const interval = setInterval(() => {
       checkReminderNotification();
     }, 30000);
-
-    return () => clearInterval(intervalId);
+    return () => clearInterval(interval);
   }, [checkReminderNotification]);
 
-  // Tab switcher router
   const renderTab = () => {
     switch (activeTab) {
       case 'today':
@@ -38,7 +35,7 @@ const AppContent = () => {
   };
 
   return (
-    <div className="app-container">
+    <div className="w-full max-w-[430px] h-screen bg-bg-rose shadow-rose-lg flex flex-col relative overflow-hidden sm:h-[880px] sm:rounded-[24px] sm:border-8 sm:border-white">
       {renderTab()}
       <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>
