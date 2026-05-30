@@ -27,6 +27,39 @@ const TodayTab = () => {
     }
   }, [nextIndexToTake]);
 
+  // PWA Install Prompt State
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isStandalone, setIsStandalone] = useState(true);
+  const [isIOS, setIsIOS] = useState(false);
+
+  useEffect(() => {
+    // Check if app is running standalone
+    const checkStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    setIsStandalone(!!checkStandalone);
+
+    // Detect iOS device
+    const checkIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    setIsIOS(checkIOS);
+
+    // Listen for Chrome/Android install prompt
+    const handleBeforeInstall = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  const handleInstallPWA = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
+
   // SVG Progress Ring calculations
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
@@ -56,7 +89,6 @@ const TodayTab = () => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  // Phase badge styles
   const getPhaseStyles = (phase) => {
     switch (phase) {
       case 'medication':
@@ -74,6 +106,35 @@ const TodayTab = () => {
 
   return (
     <div className="flex-1 overflow-y-auto p-5 pb-[92px] custom-scrollbar flex flex-col gap-5">
+      
+      {/* Smart PWA Install Banner */}
+      {!isStandalone && (
+        <div className="bg-gradient-to-r from-primary/10 to-primary-light border border-primary/20 p-4 rounded-2xl text-gray-800 flex flex-col gap-2.5 shadow-rose-sm">
+          <div className="font-bold text-[0.88rem] flex items-center gap-1.5 text-primary">
+            <span>📱</span> Install MediCycle
+          </div>
+          {isIOS ? (
+            <p className="text-[0.78rem] text-gray-600 leading-normal font-medium">
+              To add MediCycle to your home screen: Tap the Share button <span className="font-bold">📤</span> in Safari, scroll down, and select <span className="font-bold">"Add to Home Screen"</span>. 🌸
+            </p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <p className="text-[0.78rem] text-gray-600 leading-normal font-medium">
+                Install MediCycle on your device for quick offline access and daily reminder notifications!
+              </p>
+              {deferredPrompt && (
+                <button
+                  onClick={handleInstallPWA}
+                  className="bg-primary hover:bg-primary-hover text-white text-[0.8rem] font-bold py-2 px-4 rounded-xl shadow-sm self-start transition-all"
+                >
+                  Install Now
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Top Header Card */}
       <div className="flex justify-between items-center pt-2">
         <div className="flex flex-col">
@@ -157,8 +218,8 @@ const TodayTab = () => {
             ))}
           </div>
 
-          {/* Pill Grid */}
-          <div className="grid grid-cols-6 gap-2.5 justify-items-center py-2">
+          {/* Responsive Pill Grid */}
+          <div className="grid grid-cols-6 gap-2 justify-items-center py-2 min-[360px]:gap-2.5">
             {Array.from({ length: 24 }).map((_, i) => {
               const pillNum = i + 1;
               const globalIndex = activeMonthTab * 24 + i;
@@ -170,7 +231,7 @@ const TodayTab = () => {
               return (
                 <button
                   key={globalIndex}
-                  className={`w-12 h-12 rounded-full border-2 font-title text-[0.95rem] font-bold flex items-center justify-center shadow-[0_4px_6px_rgba(232,99,138,0.06)] transition-all duration-150 active:scale-85 ${
+                  className={`w-10 h-10 min-[375px]:w-11 min-[375px]:h-11 min-[410px]:w-12 min-[410px]:h-12 rounded-full border-2 font-title text-[0.88rem] min-[375px]:text-[0.95rem] font-bold flex items-center justify-center shadow-[0_4px_6px_rgba(232,99,138,0.06)] transition-all duration-150 active:scale-85 ${
                     isTaken
                       ? 'bg-gradient-to-br from-primary to-[#F383A2] border-primary text-white shadow-[0_6px_12px_rgba(232,99,138,0.22)]'
                       : isLocked
