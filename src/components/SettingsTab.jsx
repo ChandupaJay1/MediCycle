@@ -68,7 +68,8 @@ const SettingsTab = () => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-5 pb-[92px] custom-scrollbar flex flex-col gap-5">
+    <div className="flex-1 overflow-y-auto p-5 custom-scrollbar flex flex-col gap-5"
+      style={{ paddingBottom: 'calc(92px + env(safe-area-inset-bottom))' }}>
       <div className="flex flex-col pt-2">
         <h1 className="font-title text-2xl font-extrabold text-gray-800 tracking-tight">Settings ⚙️</h1>
         <p className="text-[0.75rem] text-gray-400 mt-0.5">Configure reminders and manage data backups.</p>

@@ -9,7 +9,8 @@ const Navigation = ({ activeTab, setActiveTab }) => {
   ];
 
   return (
-    <nav className="absolute bottom-0 left-0 right-0 h-[72px] bg-white border-t border-border-rose flex justify-around items-center safe-padding-bottom z-10 shadow-[0_-4px_20px_rgba(232,99,138,0.03)]">
+    <nav className="absolute bottom-0 left-0 right-0 bg-white border-t border-border-rose flex justify-around items-center z-10 shadow-[0_-4px_20px_rgba(232,99,138,0.03)]"
+      style={{ paddingBottom: 'calc(8px + env(safe-area-inset-bottom))', paddingTop: '8px', minHeight: '64px' }}>
       {navItems.map((item) => {
         const isActive = activeTab === item.id;
         return (

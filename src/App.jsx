@@ -35,7 +35,7 @@ const AppContent = () => {
   };
 
   return (
-    <div className="w-full max-w-[430px] h-screen bg-bg-rose shadow-rose-lg flex flex-col relative overflow-hidden sm:h-[880px] sm:rounded-[24px] sm:border-8 sm:border-white">
+    <div className="w-full h-screen bg-bg-rose flex flex-col relative overflow-hidden md:max-w-[430px] md:h-[880px] md:rounded-[24px] md:border-8 md:border-white md:shadow-rose-lg">
       {renderTab()}
       <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>
